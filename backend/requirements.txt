@@ -5,5 +5,5 @@ djangorestframework-simplejwt
 django-cors-headers
 pillow
 drf_social_oauth2==3.1.0
-channels==3.0.5
-daphne==3.0.2
+channels==4.0.0
+daphne==4.1.0
