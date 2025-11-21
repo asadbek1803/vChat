@@ -6,3 +6,4 @@ django-cors-headers
 pillow
 drf_social_oauth2==3.1.0
 daphne
+channels
