@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonim Chat</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-chat: #e8eef3;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --border-color: #e1e8ed;
+            --message-own: #007bff;
+            --message-other: #ffffff;
+            --primary-color: #007bff;
+            --secondary-color: #6c63ff;
+            --sidebar-bg: #f8f9fa;
+            --header-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.16);
+            --accent-color: #ff6b6b;
+            --success-color: #4CAF50;
+            --warning-color: #ff9800;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-chat: #010409;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --message-own: #1f6feb;
+            --message-other: #161b22;
+            --primary-color: #1f6feb;
+            --secondary-color: #58a6ff;
+            --sidebar-bg: #0d1117;
+            --header-bg: linear-gradient(135deg, #1f6feb 0%, #8957e5 100%);
+            --accent-color: #ff7b72;
+            --success-color: #3fb950;
+            --warning-color: #d29922;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--header-bg);
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .d-none { 
+            display: none !important; 
+        }
+
+        /* ==================== ANIMATIONS ==================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes typing {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        /* ==================== LOGIN PAGE ==================== */
+        #loginPage {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            animation: fadeIn 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #loginPage::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -150px;
+            left: -150px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        #loginPage::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            bottom: -200px;
+            right: -200px;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .login-container {
+            background: var(--bg-primary);
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            color: var(--text-primary);
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-header {
+            margin-bottom: 40px;
+        }
+
+        .login-header i {
+            font-size: 80px;
+            background: var(--header-bg);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .login-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: var(--header-bg);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .telegram-btn {
+            background: var(--header-bg);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .telegram-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .telegram-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .telegram-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .telegram-btn:active {
+            transform: translateY(0);
+        }
+
+        .telegram-btn i {
+            font-size: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .test-login-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .test-login-section p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .test-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .test-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ==================== CHAT PAGE ==================== */
+        #chatPage {
+            height: 100vh;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .chat-container {
+            display: flex;
+            height: 100%;
+            background: var(--bg-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .sidebar {
+            width: 380px;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: var(--header-bg);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        .search-box {
+            padding: 16px;
+            background: var(--bg-primary);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 16px center;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .contacts-list {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .contact-item {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        .contact-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--primary-color);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .contact-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .contact-item.active {
+            background: var(--bg-secondary);
+        }
+
+        .contact-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .contact-item.pending {
+            opacity: 0.7;
+            background: rgba(255, 152, 0, 0.05);
+        }
+
+        .contact-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--header-bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover .contact-avatar {
+            transform: scale(1.05);
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .contact-status {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .contact-badge {
+            background: linear-gradient(135deg, var(--warning-color), #ff5722);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .accept-btn, .reject-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .accept-btn {
+            background: linear-gradient(135deg, var(--success-color), #45a049);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .accept-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, var(--accent-color), #da190b);
+            color: white;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+
+        .reject-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            color: var(--text-primary);
+        }
+
+        .user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--header-bg);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* ==================== MAIN CHAT ==================== */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            min-width: 0;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .chat-header .contact-avatar {
+            width: 44px;
+            height: 44px;
+        }
+
+        #chatName {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        #chatStatus {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: var(--bg-chat);
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.03) 0%, transparent 50%);
+        }
+
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .empty-chat i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message.own {
+            justify-content: flex-end;
+            animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: var(--message-other);
+            box-shadow: var(--shadow-sm);
+            color: var(--text-primary);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .message-content:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .message.own .message-content {
+            background: var(--message-own);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message:not(.own) .message-content {
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-content p {
+            margin: 0;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            opacity: 0.8;
+        }
+
+        .message.own .message-meta {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .message-expire {
+            font-size: 10px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--message-other);
+            border-radius: 16px;
+            max-width: 120px;
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .message-input-area {
+            padding: 16px 24px;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .message-input-area input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .message-input-area input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .send-btn {
+            background: var(--header-bg);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 540px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-lg);
+            animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--border-color);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--header-bg);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Search Results */
+        .search-result-item {
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-secondary);
+            transform: translateX(4px);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+            min-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .notification i {
+            font-size: 20px;
+        }
+
+        /* Settings Modal */
+        .settings-group {
+            margin-bottom: 28px;
+        }
+
+        .settings-group h4 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-option label {
+            flex: 1;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .settings-option select {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .settings-option select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--header-bg);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Tab System */
+        .search-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .tab-btn.active {
+            background: var(--header-bg);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--border-color);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-secondary);
+        }
+
+        .no-results i {
+            font-size: 56px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 100%;
+                max-width: 320px;
+                transform: translateX(-100%);
+                z-index: 200;
+                box-shadow: var(--shadow-lg);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .chat-main {
+                width: 100%;
+            }
+
+            .mobile-menu-btn {
+                display: flex !important;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: var(--header-bg);
+                color: white;
+                border: none;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                box-shadow: var(--shadow-lg);
+                z-index: 160;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                animation: glow 2s infinite;
+            }
+
+            .mobile-menu-btn:active {
+                transform: scale(0.95);
+            }
+
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 150;
+                backdrop-filter: blur(2px);
+            }
+
+            .mobile-overlay.show {
+                display: block;
+                animation: fadeIn 0.3s ease;
+            }
+
+            .login-container {
+                padding: 40px 30px;
+                margin: 0 16px;
+            }
+
+            .login-header h1 {
+                font-size: 28px;
+            }
+
+            .login-header i {
+                font-size: 64px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .messages-container {
+                padding: 16px;
+            }
+
+            .chat-header {
+                padding: 12px 16px;
+            }
+
+            .message-input-area {
+                padding: 12px 16px;
+            }
+
+            .modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .notification {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+
+            .sidebar-footer {
+                padding: 12px;
+            }
+
+            .contact-item {
+                padding: 14px 16px;
+            }
+
+            .contact-avatar {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+            }
+
+            .contact-name {
+                font-size: 14px;
+            }
+
+            .search-box {
+                padding: 12px;
+            }
+
+            .sidebar-header {
+                padding: 16px;
+            }
+
+            .sidebar-header h2 {
+                font-size: 18px;
+            }
+
+            .header-actions {
+                gap: 6px;
+            }
+
+            .icon-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .contact-item {
+                padding: 12px 14px;
+            }
+
+            .contact-avatar {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+
+            .contact-name {
+                font-size: 13px;
+            }
+
+            .contact-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            .accept-btn, .reject-btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+
+            .login-container {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 24px;
+            }
+
+            .login-header i {
+                font-size: 56px;
+            }
+
+            .telegram-btn, .test-btn {
+                padding: 14px 20px;
+                font-size: 14px;
+            }
+
+            .message-content {
+                max-width: 90%;
+                padding: 10px 14px;
+            }
+
+            .messages-container {
+                padding: 12px;
+            }
+
+            .chat-header {
+                padding: 10px 14px;
+            }
+
+            .message-input-area {
+                padding: 10px 14px;
+            }
+
+            .send-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 16px;
+            }
+
+            .mobile-menu-btn {
+                width: 52px;
+                height: 52px;
+                font-size: 22px;
+                bottom: 16px;
+                left: 16px;
+            }
+        }
+
+        /* Mobile Menu Button (hidden by default) */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--header-bg);
+            color: white;
+            border: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: var(--shadow-lg);
+            z-index: 160;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: glow 2s infinite;
+        }
+
+        .mobile-menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex !important;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: var(--header-bg);
+                color: white;
+                border: none;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                box-shadow: var(--shadow-lg);
+                z-index: 160;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                animation: glow 2s infinite;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage">
+        <div class="login-container">
+            <div class="login-header">
+                <i class="fab fa-telegram"></i>
+                <h1>Anonim Chat</h1>
+                <p>Xavfsiz va anonim suhbat</p>
+            </div>
+            <div id="telegram-login-container"></div>
+            <div class="test-login-section">
+                <p>Test uchun:</p>
+                <button class="test-btn" onclick="testLogin()">
+                    <i class="fas fa-user"></i>
+                    Test User
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAT PAGE -->
+    <div id="chatPage" class="d-none">
+        <div class="chat-container">
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Anonim Chat</h2>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="openSearchModal()" title="Foydalanuvchi qidirish">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                        <button class="icon-btn" onclick="openSettingsModal()" title="Sozlamalar">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="icon-btn" onclick="loadContacts()" title="Yangilash">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        placeholder="Kontaktlar ichidan qidirish..." 
+                        id="contactSearchInput"
+                        onkeyup="filterContacts(this.value)"
+                        autocomplete="off">
+                </div>
+
+                <div class="contacts-list" id="contactsList">
+                    <div class="empty-chat" style="padding: 40px 20px;">
+                        <i class="fas fa-user-friends"></i>
+                        <p>Hali kontaktlar yo'q</p>
+                        <p style="font-size: 12px; margin-top: 10px;">+ tugmasini bosing</p>
+                    </div>
+                </div>
+
+                <div class="sidebar-footer">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">User</div>
+                            <div class="contact-status" id="userStatus">Online</div>
+                        </div>
+                    </div>
+                    <button class="icon-btn" onclick="logout()" style="color: var(--text-secondary);" title="Chiqish">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN CHAT -->
+            <div class="chat-main">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <div class="contact-avatar" id="chatAvatar">?</div>
+                        <div>
+                            <h3 id="chatName">Chat tanlang</h3>
+                            <p id="chatStatus" style="font-size: 12px; color: var(--text-secondary);">Offline</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <div class="empty-chat">
+                        <i class="fas fa-comments"></i>
+                        <p>Chat tanlang yoki kontakt qo'shing</p>
+                    </div>
+                </div>
+
+                <div class="message-input-area">
+                    <input type="text" id="messageInput" placeholder="Xabar yozing..." onkeypress="handleEnter(event)">
+                    <button class="send-btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+    </div>
+
+    <!-- SEARCH MODAL -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-search"></i> Foydalanuvchi qidirish</h3>
+                <button class="close-btn" onclick="closeModal('search')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-tabs">
+                    <button class="tab-btn active" onclick="switchSearchTab('username', event)">Username</button>
+                    <button class="tab-btn" onclick="switchSearchTab('telegram_id', event)">Telegram ID</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div id="usernameTab" class="tab-pane active">
+                        <input type="text" id="usernameSearch" placeholder="@username yoki username" class="input-field">
+                    </div>
+                    <div id="telegram_idTab" class="tab-pane">
+                        <input type="text" id="telegram_idSearch" placeholder="123456789" class="input-field">
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="performSearch()">
+                    <i class="fas fa-search"></i> Qidirish
+                </button>
+                
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Sozlamalar</h3>
+                <button class="close-btn" onclick="closeModal('settings')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h4>Ko'rinish</h4>
+                    <div class="settings-option">
+                        <label>Qorong'u rejim</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h4>Xabarlar</h4>
+                    <div class="settings-option">
+                        <label>Xabar o'chirish vaqti</label>
+                        <select id="messageExpireTime" onchange="saveSettings()">
+                            <option value="3600">1 soat</option>
+                            <option value="21600">6 soat</option>
+                            <option value="43200">12 soat</option>
+                            <option value="86400" selected>24 soat</option>
+                            <option value="604800">1 hafta</option>
+                            <option value="2592000">1 oy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h4>Xavfsizlik</h4>
+                    <div class="settings-option">
+                        <label>Bildirishnomalar</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notificationsToggle" checked onchange="saveSettings()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('settings')">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STATE ====================
+        let currentUser = null;
+        let currentChat = null;
+        let contacts = [];
+        let allContacts = [];
+        let ws = null;
+        let currentSearchTab = 'username';
+        let messageExpireSeconds = 86400; // Default 24 hours
+        let settings = {
+            darkMode: false,
+            notifications: true,
+            messageExpireTime: 86400
+        };
+
+        // ==================== UTILITIES ====================
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        }
+
+        function deleteCookie(name) {
+            setCookie(name, '', -1);
+        }
+
+        function showNotification(message, type = 'info') {
+            if (!settings.notifications && type === 'info') return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // ==================== SETTINGS ====================
+        function loadSettings() {
+            const saved = localStorage.getItem('chatSettings');
+            if (saved) {
+                settings = JSON.parse(saved);
+                document.getElementById('darkModeToggle').checked = settings.darkMode;
+                document.getElementById('notificationsToggle').checked = settings.notifications;
+                document.getElementById('messageExpireTime').value = settings.messageExpireTime;
+                messageExpireSeconds = settings.messageExpireTime;
+                
+                if (settings.darkMode) {
+                    document.body.classList.add('dark-mode');
+                }
+            }
+        }
+
+        function saveSettings() {
+            settings.darkMode = document.getElementById('darkModeToggle').checked;
+            settings.notifications = document.getElementById('notificationsToggle').checked;
+            settings.messageExpireTime = parseInt(document.getElementById('messageExpireTime').value);
+            messageExpireSeconds = settings.messageExpireTime;
+            
+            localStorage.setItem('chatSettings', JSON.stringify(settings));
+            showNotification('Sozlamalar saqlandi', 'success');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            saveSettings();
+        }
+
+        function openSettingsModal() {
+            openModal('settings');
+        }
+
+        // ==================== MOBILE MENU ====================
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('show');
+            
+            // Prevent body scrolling when menu is open
+            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        }
+
+        // ==================== API CALLS ====================
+        async function apiCall(url, options = {}) {
+            try {
+                const csrftoken = getCookie('csrftoken');
+                const defaultOptions = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                console.log('API Call:', url, defaultOptions);
+                const response = await fetch(url, defaultOptions);
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ==================== AUTHENTICATION ====================
+        window.testLogin = async function() {
+            try {
+                const testUser = {
+                    id: 123456789,
+                    first_name: 'Test',
+                    last_name: 'User',
+                    username: 'testuser',
+                    auth_date: Math.floor(Date.now() / 1000),
+                    hash: 'test'
+                };
+
+                const data = await apiCall('/api/auth/telegram/', {
+                    method: 'POST',
+                    body: JSON.stringify(testUser)
+                });
+
+                if (data.success) {
+                    handleAuthSuccess(data);
+                }
+            } catch (error) {
+                showNotification('Test login xatosi: ' + error.message, 'error');
+            }
+        };
+
+        window.onTelegramAuth = async function(user) {
+            try {
+                const data = await apiCall('/api/auth/telegram/', {
+                    method: 'POST',
+                    body: JSON.stringify(user)
+                });
+
+                if (data.success) {
+                    handleAuthSuccess(data);
+                }
+            } catch (error) {
+                showNotification('Auth xatosi: ' + error.message, 'error');
+            }
+        };
+
+        function handleAuthSuccess(data) {
+            currentUser = data.user;
+            allContacts = data.contacts || [];
+            contacts = [...allContacts];
+
+            setCookie('access_token', data.access, 7);
+            setCookie('refresh_token', data.refresh, 30);
+            setCookie('user_id', data.user.id, 30);
+            setCookie('telegram_id', data.user.telegram_id, 30);
+
+            console.log('✅ Auth success, user:', currentUser);
+
+            showChatPage();
+            renderContacts();
+            connectWebSocket();
+            showNotification('Xush kelibsiz, ' + currentUser.first_name + '!', 'success');
+        }
+
+        function showChatPage() {
+            document.getElementById('loginPage').classList.add('d-none');
+            document.getElementById('chatPage').classList.remove('d-none');
+
+            if (currentUser) {
+                const avatar = currentUser.first_name.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = avatar;
+                document.getElementById('userName').textContent = currentUser.first_name;
+            }
+        }
+
+        window.logout = async function() {
+            if (!confirm('Chiqishni xohlaysizmi?')) return;
+
+            try {
+                await apiCall('/api/logout/', { method: 'POST' });
+                
+                if (ws) ws.close();
+                
+                deleteCookie('access_token');
+                deleteCookie('refresh_token');
+                deleteCookie('user_id');
+                deleteCookie('telegram_id');
+
+                currentUser = null;
+                currentChat = null;
+                contacts = [];
+
+                document.getElementById('loginPage').classList.remove('d-none');
+                document.getElementById('chatPage').classList.add('d-none');
+
+                showNotification('Chiqildi', 'info');
+            } catch (error) {
+                showNotification('Logout xatosi: ' + error.message, 'error');
+            }
+        };
+
+        // ==================== WEBSOCKET ====================
+        function connectWebSocket() {
+            if (!currentUser) {
+                console.error('❌ No current user for WebSocket');
+                return;
+            }
+
+            const telegramId = getCookie('telegram_id');
+            console.log('🔌 Connecting WebSocket with telegram_id:', telegramId);
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/chat/${telegramId}/`;
+            
+            console.log('🔗 WebSocket URL:', wsUrl);
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('✅ WebSocket connected');
+                showNotification('Server bilan ulandi', 'success');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('📨 WS Message:', data);
+                handleWebSocketMessage(data);
+            };
+
+            ws.onerror = (error) => {
+                console.error('❌ WebSocket error:', error);
+                showNotification('WebSocket xatosi', 'error');
+            };
+
+            ws.onclose = (event) => {
+                console.log('🔴 WebSocket closed:', event.code, event.reason);
+                setTimeout(() => {
+                    console.log('🔄 Reconnecting...');
+                    connectWebSocket();
+                }, 3000);
+            };
+        }
+
+        function handleWebSocketMessage(data) {
+            console.log('WS Message:', data);
+            
+            if (data.type === 'new_message') {
+                receiveMessage(data);
+            } else if (data.type === 'contact_request') {
+                handleContactRequest(data);
+            } else if (data.type === 'contact_accepted') {
+                loadContacts();
+                showNotification('Kontakt qo\'shildi!', 'success');
+            } else if (data.type === 'typing') {
+                showTypingIndicator(data.from_user_id);
+            }
+        }
+
+        function sendWSMessage(type, data) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const message = { type, ...data };
+                console.log('📤 Sending WS:', message);
+                ws.send(JSON.stringify(message));
+            } else {
+                console.error('❌ WebSocket not ready:', ws ? ws.readyState : 'null');
+                showNotification('Server bilan aloqa yo\'q', 'error');
+            }
+        }
+
+        // ==================== CONTACTS ====================
+        async function loadContacts() {
+            try {
+                const data = await apiCall('/api/contacts/', { method: 'GET' });
+                
+                if (data.success) {
+                    allContacts = data.contacts;
+                    contacts = [...allContacts];
+                    renderContacts();
+                    showNotification(`${contacts.length} ta kontakt yuklandi`, 'success');
+                }
+            } catch (error) {
+                showNotification('Kontaktlar yuklanmadi: ' + error.message, 'error');
+            }
+        }
+
+        function renderContacts() {
+            const container = document.getElementById('contactsList');
+
+            if (contacts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-chat" style="padding: 40px 20px;">
+                        <i class="fas fa-user-friends"></i>
+                        <p>Hali kontaktlar yo'q</p>
+                        <p style="font-size: 12px; margin-top: 10px;">+ tugmasini bosing</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = contacts.map(contact => {
+                const isPending = !contact.is_accepted;
+                const showActions = isPending && contact.pending_from_them;
+                
+                return `
+                    <div class="contact-item ${currentChat && currentChat.id === contact.id ? 'active' : ''} ${isPending ? 'pending' : ''}" 
+                         onclick="${!showActions ? `selectContact(${contact.id})` : ''}">
+                        <div class="contact-avatar">${contact.name.charAt(0).toUpperCase()}</div>
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                ${contact.name}
+                                ${isPending ? '<span class="contact-badge">Kutilmoqda</span>' : ''}
+                            </div>
+                            <div class="contact-status">${contact.is_online ? '🟢 Online' : '🔴 Offline'}</div>
+                        </div>
+                        ${showActions ? `
+                            <div class="contact-actions">
+                                <button class="accept-btn" onclick="event.stopPropagation(); acceptContactRequest(${contact.user_id})">
+                                    <i class="fas fa-check"></i> Qabul
+                                </button>
+                                <button class="reject-btn" onclick="event.stopPropagation(); rejectContactRequest(${contact.user_id})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterContacts(query) {
+            query = query.toLowerCase();
+            
+            if (!query) {
+                contacts = [...allContacts];
+            } else {
+                contacts = allContacts.filter(c => 
+                    c.name.toLowerCase().includes(query) ||
+                    (c.username && c.username.toLowerCase().includes(query))
+                );
+            }
+            
+            renderContacts();
+        }
+
+        window.selectContact = async function(contactId) {
+            currentChat = contacts.find(c => c.id === contactId);
+            
+            if (!currentChat) return;
+
+            // Don't open chat if pending
+            if (!currentChat.is_accepted) {
+                showNotification('Kutilayotgan so\'rovni ochib bo\'lmaydi', 'error');
+                return;
+            }
+
+            document.getElementById('chatAvatar').textContent = currentChat.name.charAt(0).toUpperCase();
+            document.getElementById('chatName').textContent = currentChat.name;
+            document.getElementById('chatStatus').textContent = currentChat.is_online ? '🟢 Online' : '🔴 Offline';
+
+            renderContacts();
+            await loadMessages(contactId);
+            
+            // Close mobile menu when selecting a contact on mobile
+            if (window.innerWidth <= 768) {
+                toggleMobileMenu();
+            }
+        };
+
+        async function acceptContactRequest(fromUserId) {
+            try {
+                const data = await apiCall('/api/contacts/accept/', {
+                    method: 'POST',
+                    body: JSON.stringify({ from_user_id: fromUserId })
+                });
+
+                if (data.success) {
+                    showNotification('Kontakt qabul qilindi!', 'success');
+                    loadContacts();
+                    
+                    // Send WS notification
+                    sendWSMessage('contact_accepted', { to_user_id: fromUserId });
+                }
+            } catch (error) {
+                showNotification('Xatolik: ' + error.message, 'error');
+            }
+        }
+
+        async function rejectContactRequest(fromUserId) {
+            try {
+                const data = await apiCall('/api/contacts/reject/', {
+                    method: 'POST',
+                    body: JSON.stringify({ from_user_id: fromUserId })
+                });
+
+                if (data.success) {
+                    showNotification('So\'rov rad etildi', 'info');
+                    loadContacts();
+                }
+            } catch (error) {
+                showNotification('Xatolik: ' + error.message, 'error');
+            }
+        }
+
+        function handleContactRequest(data) {
+            console.log('📩 Contact request received:', data);
+            showNotification(`${data.from_name} sizga kontakt so'rovi yubordi`, 'info');
+            
+            // Reload contacts to show pending request
+            loadContacts();
+        }
+
+        // ==================== SEARCH ====================
+        window.openSearchModal = function() {
+            openModal('search');
+            document.getElementById('usernameSearch').value = '';
+            document.getElementById('telegram_idSearch').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        };
+
+        window.switchSearchTab = function(tab, event) {
+            currentSearchTab = tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            document.getElementById('searchResults').innerHTML = '';
+        };
+
+        window.performSearch = async function() {
+            let searchValue = '';
+            
+            if (currentSearchTab === 'username') {
+                searchValue = document.getElementById('usernameSearch').value.trim();
+            } else {
+                searchValue = document.getElementById('telegram_idSearch').value.trim();
+            }
+            
+            if (!searchValue) {
+                showNotification('Qidiruv so\'rovini kiriting', 'error');
+                return;
+            }
+            
+            try {
+                console.log('🔍 Searching:', currentSearchTab, searchValue);
+                showNotification('Qidiruv...', 'info');
+                
+                const data = await apiCall('/api/search/users/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        type: currentSearchTab,
+                        value: searchValue
+                    })
+                });
+                
+                console.log('✅ Search results:', data);
+                
+                if (data.success) {
+                    displaySearchResults(data.results);
+                }
+            } catch (error) {
+                console.error('❌ Search error:', error);
+                showNotification('Qidiruv xatosi: ' + error.message, 'error');
+            }
+        };
+
+        function displaySearchResults(results) {
+            const container = document.getElementById('searchResults');
+            
+            if (!results || results.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <p>Hech narsa topilmadi</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = results.map(user => `
+                <div class="search-result-item">
+                    <div class="contact-avatar">${user.first_name.charAt(0).toUpperCase()}</div>
+                    <div style="flex: 1;">
+                        <div class="contact-name">${escapeHtml(user.first_name)} ${escapeHtml(user.last_name || '')}</div>
+                        <div class="contact-status">@${escapeHtml(user.username)}</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSearchedUser(${user.id}, '${escapeHtml(user.first_name)}', '${escapeHtml(user.username)}')">
+                        Qo'shish
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.addSearchedUser = async function(userId, userName, username) {
+            try {
+                console.log('➕ Adding user:', userId, userName);
+                
+                const data = await apiCall('/api/contacts/add/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        username: username,
+                        custom_name: userName
+                    })
+                });
+
+                if (data.success) {
+                    closeModal('search');
+                    showNotification(`${userName} ga so'rov yuborildi`, 'success');
+                    
+                    // Send via WebSocket
+                    sendWSMessage('contact_request', {
+                        to_user_id: userId,
+                        custom_name: userName
+                    });
+                    
+                    loadContacts();
+                }
+            } catch (error) {
+                console.error('❌ Add contact error:', error);
+                showNotification('Xatolik: ' + error.message, 'error');
+            }
+        };
+
+        // ==================== MESSAGES ====================
+        async function loadMessages(contactId) {
+            try {
+                console.log('📨 Loading messages for contact:', contactId);
+                const data = await apiCall(`/api/messages/${contactId}/`, { method: 'GET' });
+                
+                if (data.success) {
+                    console.log('✅ Messages loaded:', data.messages.length);
+                    renderMessages(data.messages);
+                }
+            } catch (error) {
+                console.error('❌ Load messages error:', error);
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (!currentChat) {
+                container.innerHTML = `
+                    <div class="empty-chat">
+                        <i class="fas fa-comments"></i>
+                        <p>Chat tanlang</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-chat">
+                        <i class="fas fa-comments"></i>
+                        <p>Suhbatni boshlang</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isOwn = msg.sender_id == currentUser.id;
+                const time = new Date(msg.created_at).toLocaleTimeString('uz-UZ', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                const expiresAt = new Date(msg.expires_at);
+                const now = new Date();
+                const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
+                const hoursLeft = Math.floor(timeLeft / 3600);
+                const minsLeft = Math.floor((timeLeft % 3600) / 60);
+                
+                let expireText = '';
+                if (hoursLeft > 24) {
+                    const daysLeft = Math.floor(hoursLeft / 24);
+                    expireText = `${daysLeft} kun`;
+                } else if (hoursLeft > 0) {
+                    expireText = `${hoursLeft}s ${minsLeft}d`;
+                } else if (minsLeft > 0) {
+                    expireText = `${minsLeft} daqiqa`;
+                } else {
+                    expireText = 'Tugayapti';
+                }
+
+                return `
+                    <div class="message ${isOwn ? 'own' : ''}">
+                        <div class="message-content">
+                            <p>${escapeHtml(msg.content)}</p>
+                            <div class="message-meta">
+                                <span>${time}</span>
+                                <span class="message-expire">🔥 ${expireText}</span>
+                                ${isOwn ? `<i class="fas fa-check${msg.is_read ? '-double' : ''}"></i>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator(userId) {
+            if (!currentChat || currentChat.id !== userId) return;
+            
+            const container = document.getElementById('messagesContainer');
+            const existingIndicator = container.querySelector('.typing-indicator');
+            
+            if (existingIndicator) {
+                clearTimeout(window.typingTimeout);
+                window.typingTimeout = setTimeout(() => {
+                    existingIndicator.remove();
+                }, 2000);
+                return;
+            }
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.innerHTML = `
+                <div class="contact-avatar" style="width: 32px; height: 32px; font-size: 14px;">${currentChat.name.charAt(0).toUpperCase()}</div>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            
+            container.appendChild(indicator);
+            container.scrollTop = container.scrollHeight;
+            
+            window.typingTimeout = setTimeout(() => {
+                indicator.remove();
+            }, 2000);
+        }
+
+        window.sendMessage = async function() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text || !currentChat) return;
+
+            console.log('📤 Sending message:', text);
+
+            try {
+                const data = await apiCall('/api/messages/send/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        to_user_id: currentChat.id,
+                        content: text,
+                        expire_seconds: messageExpireSeconds
+                    })
+                });
+
+                if (data.success) {
+                    input.value = '';
+                    
+                    // Send via WebSocket
+                    sendWSMessage('send_message', {
+                        to_user_id: currentChat.telegram_id,
+                        message: text,
+                        message_id: data.message.id
+                    });
+                    
+                    // Reload messages
+                    loadMessages(currentChat.id);
+                }
+            } catch (error) {
+                showNotification('Xabar yuborilmadi: ' + error.message, 'error');
+            }
+        };
+
+        function receiveMessage(data) {
+            console.log('📬 Message received:', data);
+            
+            if (currentChat && currentChat.telegram_id === data.from_user_id) {
+                loadMessages(currentChat.id);
+            }
+
+            showNotification(`Yangi xabar: ${data.message.substring(0, 30)}...`, 'info');
+        }
+
+        window.handleEnter = function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        };
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== MODALS ====================
+        window.openModal = function(modalName) {
+            document.getElementById(modalName + 'Modal').style.display = 'flex';
+        };
+
+        window.closeModal = function(modalName) {
+            document.getElementById(modalName + 'Modal').style.display = 'none';
+        };
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 App initializing...');
+            
+            // Load settings
+            loadSettings();
+            
+            const accessToken = getCookie('access_token');
+            const userId = getCookie('user_id');
+            const telegramId = getCookie('telegram_id');
+            
+            if (accessToken && userId && telegramId) {
+                console.log('✅ Token found, loading chat...');
+                
+                currentUser = {
+                    id: userId,
+                    first_name: 'User',
+                    telegram_id: telegramId
+                };
+                
+                showChatPage();
+                loadContacts();
+                connectWebSocket();
+            } else {
+                console.log('📄 Loading login page');
+                loadTelegramWidget();
+            }
+        });
+
+        function loadTelegramWidget() {
+            const container = document.getElementById('telegram-login-container');
+            if (!container) return;
+
+            const script = document.createElement('script');
+            script.src = 'https://telegram.org/js/telegram-widget.js?22';
+            script.setAttribute('data-telegram-login', 'vChatAuthBot');
+            script.setAttribute('data-size', 'large');
+            script.setAttribute('data-radius', '10');
+            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+            script.setAttribute('data-request-access', 'write');
+            script.async = true;
+
+            container.appendChild(script);
+        }
+    </script>
+</body>
+</html>
